@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1088975570381",
+    "firebase_url": "https://firapp-caede.firebaseio.com",
+    "project_id": "firapp-caede",
+    "storage_bucket": "firapp-caede.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1088975570381:android:f303907d4f49d8aca63084",
+        "android_client_info": {
+          "package_name": "com.example.firbase_chat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1088975570381-6ejbv7bt7ttut3eqk7qqhrl62koo1th4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.firbase_chat",
+            "certificate_hash": "c884116cf3206d0b5dd6c2d45ba8244f15ad32bd"
+          }
+        },
+        {
+          "client_id": "1088975570381-a1jvc8k0d4361h1ue8tgtvc2qhkhkqqe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcq8MIGXc6qbXDGH5H_FfkxRYdRWh8XM4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1088975570381-a1jvc8k0d4361h1ue8tgtvc2qhkhkqqe.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1088975570381-qs0r0ah4g9difhdo2p4t04drp1f649a9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.firbaseChat"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
