@@ -1,5 +1,7 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firbase_chat/ChatScreen.dart';
+import 'package:firbase_chat/CommonClasses/CircularImage.dart';
 import 'package:firbase_chat/appconstants.dart';
 import 'package:firbase_chat/core/models/friendListInfo.dart';
 import 'package:firbase_chat/core/models/userInfo.dart';
@@ -9,7 +11,8 @@ import 'package:firbase_chat/Extensions/Extensions.dart';
 import 'package:provider/provider.dart';
 import 'package:firbase_chat/service_locator.dart';
 import 'package:firbase_chat/core/viewmodels/firCrudModel.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'profile.dart';
 
 class ChatList extends StatefulWidget {
   @override
@@ -18,44 +21,94 @@ class ChatList extends StatefulWidget {
 
 class _ChatListState extends State<ChatList> {
   final firModel = locator<FirCrudModel>();
+
+  _getuserInfo() async {
+    var name = await SharedData().getCurrentName();
+    var image = await SharedData().getCurrentUserImage();
+    // setState(() {
+    if (name != null) {
+      firModel.name = name;
+    }
+    if (image != null) {
+      firModel.image = image;
+    }
+    //  });
+  }
+
+  Widget _profileImage(String image) {
+    if (image != "") {
+      return Container(
+        //height: 35 ,
+        width: 40,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(
+            Radius.circular(4),
+          ),
+          image: DecorationImage(
+            image: image != ""
+                ? Image.network(image).image
+                : FileImage(File(firModel.image)),
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    } else {
+      return Image.asset("icons/user_profilr_pic@3x.png");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _getuserInfo();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<FirCrudModel>(
         create: (context) => firModel,
         child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            automaticallyImplyLeading: false,
-            elevation: 0.0,
-            // backgroundColor: Colors.white,
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  "Chats",
-                  style: TextStyle(fontStyle: FontStyle.normal, fontSize: 30)
-                      .getStyleBody1(context),
-                )
-              ],
-            ),
-            actions: <Widget>[
-              Padding(
-                  padding: EdgeInsets.only(right: 30),
-                  child: InkWell(
-                      child: ClipRRect(
-                        child: Image.asset(
-                          "icons/user_profilr_pic@3x.png",
-                        ).getImageFrom(
-                            "https://homepages.cae.wisc.edu/~ece533/images/pool.png",
-                            width: 40,
-                            height: 45),
-                      ),
-                      onTap: () {})),
-            ],
-          ),
-          body: AllUserList(),
-        ));
+                  appBar: AppBar(
+                    backgroundColor: Colors.white,
+                    automaticallyImplyLeading: false,
+                    elevation: 0.0,
+                    // backgroundColor: Colors.white,
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          "Chats",
+                          style: TextStyle(
+                                  fontStyle: FontStyle.normal, fontSize: 30)
+                              .getStyleBody1(context),
+                        )
+                      ],
+                    ),
+                    actions: <Widget>[
+                      Padding(
+                          padding:
+                              EdgeInsets.only(right: 30, top: 10, bottom: 10),
+                          child: InkWell(
+                              child: _profileImage(firModel
+                                  .image), //RoundedImage(model.image, 5, 35),
+                              onTap: () {
+                                Navigator.pushNamed(
+                                    context, AppConstants.profile, arguments: {
+                                  "back": true,
+                                  "name": firModel.name,
+                                  "image": firModel.image
+                                });
+                                // Navigator.push(context,
+                                //     MaterialPageRoute(builder: (_) {
+                                //   return Proflie(true);
+                                // }));
+                              })),
+                    ],
+                  ),
+                  body: AllUserList(),
+                ));
   }
 }
 
@@ -73,21 +126,14 @@ class _AllUserListState extends State<AllUserList> {
   @override
   void initState() {
     super.initState();
-
-    Map currentUserDetails = UserInfo(userName: "Test1").tojson();
-    firModel.createNewUser(currentUserDetails).then((value) => userID = value);
+    _getUserID();
   }
 
-  saveUserID() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setString(userID, userID);
+  _getUserID() async {
+    String userId = await SharedData().getCurrentUserId();
+    this.userID = userId;
+    print(this.userID);
   }
-
-  // Future getUserID() async {
-  //   SharedPreferences pref = await SharedPreferences.getInstance();
-  //   userID = pref.getString(userID);
-  //   //return pref.getString(userID);
-  // }
 
   setUsersToFriendlists(String selfId, String otherUserId, String chatId) {
     //saving friend to my frient list
@@ -105,8 +151,6 @@ class _AllUserListState extends State<AllUserList> {
 
   @override
   Widget build(BuildContext context) {
-    saveUserID();
-    //getUserID();
     return Column(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -134,9 +178,10 @@ class _AllUserListState extends State<AllUserList> {
               ),
             )),
         Expanded(
-            child: Consumer<FirCrudModel>(
-                builder: (context, model, child) => StreamBuilder(
-                    stream: model.fetchAllUser(),
+             child: Consumer<FirCrudModel>(
+                builder: (context, model, child) => 
+                StreamBuilder(
+                    stream: firModel.fetchAllUser(),
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                       if (snapshot.hasData) {
                         allUsers = snapshot.data.documents
@@ -146,15 +191,21 @@ class _AllUserListState extends State<AllUserList> {
                         return ListView.builder(
                             itemCount: allUsers.length,
                             itemBuilder: (context, index) {
-                              if (allUsers[index].id == userID) {
+                              UserInfo user = allUsers[index];
+                              if (user.id == userID) {
+                                //Provider.of<FirCrudModel>(context,listen: false).image = user.profilePic;
+                                //Provider.of<FirCrudModel>(context,listen: false).name = user.userName;
+                                //firModel.notify(user.profilePic, user.userName);
                                 return Container();
                               }
                               return Column(children: <Widget>[
                                 Padding(
                                   padding: EdgeInsets.only(top: 20),
                                   child: ListTile(
-                                    leading: Image.asset(
-                                        "icons/user_profilr_pic@3x.png"),
+                                    leading:
+                                        RoundedImage(user.profilePic, 10, 50),
+                                    // Image.asset(
+                                    //     "icons/user_profilr_pic@3x.png"),
                                     trailing: Padding(
                                       padding: EdgeInsets.only(top: 30),
                                       child: Image.asset("icons/next@2x.png",
@@ -199,7 +250,9 @@ class _AllUserListState extends State<AllUserList> {
                                           context, AppConstants.chatScreen,
                                           arguments: {
                                             "chatId": uniqueId,
-                                            "userId": userID
+                                            "userId": userID,
+                                            "profilePic":
+                                                allUsers[index].profilePic
                                           });
                                       // }
                                     },
@@ -218,7 +271,8 @@ class _AllUserListState extends State<AllUserList> {
                       } else {
                         return Text("Fetching");
                       }
-                    })))
+                    }))
+                    )
       ],
     );
   }

@@ -8,6 +8,7 @@ import 'package:firbase_chat/appconstants.dart';
 
 class Router {
   static Route<dynamic> generateRoute(RouteSettings settings) {
+    Map arguments = settings.arguments;
     switch (settings.name) {
       case AppConstants.enterNumber:
         return MaterialPageRoute(builder: (_) => ChatApp());
@@ -16,12 +17,11 @@ class Router {
       case AppConstants.chatList:
         return MaterialPageRoute(builder: (_) => ChatList());
       case AppConstants.chatScreen:
-        Map arguments = settings.arguments;
         return MaterialPageRoute(
             builder: (_) =>
-                ChatScreen(arguments["chatId"], arguments["userId"]));
+                ChatScreen(arguments["chatId"], arguments["userId"],arguments["profilePic"]));
       case AppConstants.profile:
-        return MaterialPageRoute(builder: (_) => Proflie());
+        return MaterialPageRoute(builder: (_) => Proflie(arguments["back"],name: arguments["name"],image:arguments["image"]));
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(

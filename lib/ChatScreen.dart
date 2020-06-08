@@ -10,7 +10,9 @@ import 'package:provider/provider.dart';
 class ChatScreen extends StatefulWidget {
   final String chatId;
   final String currentUserId;
-  ChatScreen(this.chatId, this.currentUserId);
+  final String profilePic;
+  ChatScreen(this.chatId, this.currentUserId, this.profilePic);
+  //const ChatScreen({ Key key }) : super(key: key);
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
@@ -62,10 +64,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: Column(children: <Widget>[
                       Container(
                         height: Utility().screenHeight(context) * 0.24,
-                        child: 
-                        GradientAppBar(widget.chatId),
+                        child: GradientAppBar(widget.chatId, widget.profilePic),
                       ),
-                      
                       Expanded(
                         child: Consumer<ChatModel>(
                             builder: (context, model, widget) => StreamBuilder(
@@ -194,7 +194,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
 class GradientAppBar extends StatelessWidget {
   final String chatId;
-  GradientAppBar(this.chatId);
+  final String pic;
+  GradientAppBar(this.chatId, this.pic);
 
   @override
   Widget build(BuildContext context) {
@@ -231,15 +232,16 @@ class GradientAppBar extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           Container(
-                              child: Image.asset(
-                                'icons/user_profilr_pic@3x.png',
-                                width: 60,
-                                height: 60,
-                                fit: BoxFit.cover,
-                              ),
+                              width: 60,
+                              height: 60,
                               decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image: Image.network(
+                                    pic,
+                                    fit: BoxFit.cover,
+                                  ).image),
                                   borderRadius: BorderRadius.circular(10),
-                                  color: Colors.white,
+                                  color: Colors.transparent,
                                   border: Border.all(
                                       width: 1, color: Colors.white))),
                           SizedBox(height: 5),

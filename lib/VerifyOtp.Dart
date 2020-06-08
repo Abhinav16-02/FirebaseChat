@@ -1,11 +1,15 @@
 //import 'package:firbase_chat/ChatList.dart';
 import 'package:firbase_chat/appconstants.dart';
+import 'package:firbase_chat/core/services/firebaseapi.dart';
+import 'package:firbase_chat/service_locator.dart';
+import 'package:firbase_chat/ui/shared/sharedPreferences.dart';
 import 'package:flutter/material.dart';
 import 'package:firbase_chat/Utilities/Utility.dart';
 import 'package:firbase_chat/Extensions/Extensions.dart';
 import 'package:pin_entry_text_field/pin_entry_text_field.dart';
 import 'CommonClasses/GradientButton.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VerifyOtp extends StatefulWidget {
   final String verificationID;
@@ -21,10 +25,11 @@ class _VerifyOtpState extends State<VerifyOtp> {
   String mobileNumber = "test";
   String id;
   String smsCode;
+  FirebaseApi _firApi = locator<FirebaseApi>();
 
   @override
   void initState() {
-    super.initState(); 
+    super.initState();
     utility = Utility();
   }
 
@@ -142,8 +147,11 @@ class _VerifyOtpState extends State<VerifyOtp> {
                     ]))));
   }
 
+  saveInfo(String uuid) async {
+    SharedData().saveCurrentUUID(uuid);
+  }
+
   void _signInWithPhoneNumber() {
-    
     AuthCredential credential =
         PhoneAuthProvider.getCredential(verificationId: id, smsCode: smsCode);
     FirebaseAuth.instance.signInWithCredential(credential).catchError((error) {
@@ -152,15 +160,21 @@ class _VerifyOtpState extends State<VerifyOtp> {
         print("error");
       });
     }).then((user) async {
-      setState(() {
-        if (user.user != null) {}
-        // status = 'Authentication successful';
-        Navigator.pushNamed(context, AppConstants.profile);
-        //    Navigator.push(
-        //       context, MaterialPageRoute(builder: (context) => ChatList()));
-        // });
-        //onAuthenticationSuccessful();
-      });
+      // setState(() {
+      //   if (user.user != null) {}
+      saveInfo(user.user.uid);
+      bool userExist = await _firApi.checkUserExist();
+      if (userExist) {
+        Navigator.of(context).pushReplacementNamed(AppConstants.chatList);
+      } else {
+        //Navigator.pushNamed(context, AppConstants.profile);
+        Navigator.of(context).pushReplacementNamed(AppConstants.profile);
+      }
+      //    Navigator.push(
+      //       context, MaterialPageRoute(builder: (context) => ChatList()));
+      // });
+      //onAuthenticationSuccessful();
+      // });
     });
   }
 }

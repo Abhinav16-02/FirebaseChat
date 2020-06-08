@@ -9,10 +9,35 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firbase_chat/VerifyOtp.Dart';
 import 'package:firbase_chat/Extensions/Extensions.dart';
+import 'ui/shared/Alert.dart';
+import 'ui/shared/sharedPreferences.dart';
 
-void main() {
-  setupLocator();
-  runApp(MaterialApp(
+
+
+Future<void> main() async {
+      WidgetsFlutterBinding.ensureInitialized();
+      var id = await SharedData().getCurrentUIID();
+      var name = await SharedData().getCurrentName();
+      print(id);
+      setupLocator();
+      runApp(MyApp(id != null,name != null));
+ }
+
+ class MyApp extends StatelessWidget {
+  bool  _login;
+  bool _hasName;
+
+  MyApp(this._login, this._hasName);
+  Widget _home() {
+     if (_login) {
+       return _hasName ? ChatList() : Proflie(true,name:"",image:"");
+     } else {
+       return ChatApp();
+     }
+  }
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
     theme: ThemeData(
       snackBarTheme:
           SnackBarThemeData(backgroundColor: Color.fromRGBO(72, 194, 140, 1)),
@@ -24,11 +49,14 @@ void main() {
         bodyText2: TextStyle(fontSize: 16.0, color: Colors.grey),
       ),
     ),
-    home: Scaffold(backgroundColor: Colors.white, body: ChatApp()),
+    home:  _home(),
     //initialRoute: AppConstants.enterNumber,
     onGenerateRoute: Router.generateRoute,
-  ));
+  );
+  }
 }
+
+
 
 class ChatApp extends StatefulWidget {
   @override
@@ -40,12 +68,15 @@ class _ChatAppState extends State<ChatApp> {
   final myController = TextEditingController();
   String verificationID;
   var firAuth = FirebaseAuth.instance;
+  String status = "";
   @override
   void initState() {
     super.initState();
     utility = Utility();
   }
-
+  saveInfo(String uuid) async{
+    SharedData().saveCurrentUUID(uuid);
+  }
   //Custom Functions
   Future<void> verifyMobileNumber() async {
     final PhoneCodeAutoRetrievalTimeout autoRetrive = (String verificationID) {
@@ -55,8 +86,14 @@ class _ChatAppState extends State<ChatApp> {
     final PhoneVerificationCompleted verified = (AuthCredential credential) {
       print("Verified");
       print("$credential");
-      Navigator.pushNamed(context, AppConstants.chatList);
+      FirebaseAuth.instance.signInWithCredential(credential)
+      .then((user) { 
+        saveInfo(user.user.uid);
+        Navigator.of(context).pushReplacementNamed( AppConstants.profile);})
+      .catchError((e) => print(e));
     };
+     
+      //Navigator.pushNamed(context, AppConstants.chatList);
 
     final PhoneCodeSent codeSent = (verificationID, [int forceResendToken]) {
       this.verificationID = verificationID;
@@ -70,11 +107,12 @@ class _ChatAppState extends State<ChatApp> {
 
     final PhoneVerificationFailed verificationFailed = (AuthException error) {
       print("${error.message}");
+        AlertFormState().showDialogBox(context, "Error", error.message);
     };
 
     firAuth.verifyPhoneNumber(
         phoneNumber: myController.text,
-        timeout: Duration(seconds: 60),
+        timeout: Duration(seconds: 120),
         verificationCompleted: verified,
         verificationFailed: verificationFailed,
         codeSent: codeSent,
@@ -88,7 +126,7 @@ class _ChatAppState extends State<ChatApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Scaffold(backgroundColor: Colors.white, body: Container(
       alignment: Alignment.center,
       child: SingleChildScrollView(
           child: Column(
@@ -178,6 +216,8 @@ class _ChatAppState extends State<ChatApp> {
               ))
         ],
       )),
+    ),
     );
   }
+  
 }
