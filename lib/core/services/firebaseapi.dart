@@ -20,6 +20,16 @@ class FirebaseApi {
     return ref;
   }
 
+//getCurrentuserProfilePic
+  Future<DocumentSnapshot> getCurrentUserImage() async {
+    DocumentReference docId = await _getCurrentUserDocId();
+    docId.snapshots().listen((event) {
+      return event;
+    });
+    DocumentSnapshot info = await docId.get();
+    return info;
+  }
+
 //get user list
   Stream<QuerySnapshot> getAllUsers() {
     return _db.collection(AppConstants.firUserPath).snapshots();
@@ -36,15 +46,19 @@ class FirebaseApi {
 //check current user exist
   Future<bool> checkUserExist() async {
     DocumentReference docId = await _getCurrentUserDocId();
-    DocumentSnapshot data = await docId.get();
-    return data.exists;
+    try {
+      DocumentSnapshot data = await docId.get();
+      return data.exists;
+    } catch (e) {
+      return false;
+    }
   }
 
 // Creting new user on login
   Future<String> setNewUser(Map userInfo) async {
     DocumentReference docId = await _getCurrentUserDocId();
     bool userExist = await checkUserExist();
-    
+
     if (!userExist) {
       docId.setData(userInfo);
     } else {
@@ -57,10 +71,16 @@ class FirebaseApi {
   }
 
   //Upload image to firebase Storage
-  Future<String> uploadFileToFirebase(String filePath) async {
+  Future<String> uploadFileToFirebase(
+      String filePath, ImageType imageType) async {
     final file = File(filePath);
     String childName = basename(filePath);
-    final StorageReference ref = _storage.child("profilePics").child(childName);
+    String path;
+    imageType == ImageType.profilePic
+        ? path = AppConstants.profilePics
+        : path = AppConstants.chatImages;
+
+    final StorageReference ref = _storage.child(path).child(childName);
     StorageTaskSnapshot getUrlFrom = await ref.putFile(file).onComplete;
     String url = await getUrlFrom.ref.getDownloadURL();
     return url;

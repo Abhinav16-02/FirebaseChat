@@ -1,3 +1,4 @@
+import 'package:firbase_chat/ChatList.dart';
 import 'package:firbase_chat/CommonClasses/GradientButton.dart';
 import 'package:firbase_chat/core/viewmodels/profileViewModel.dart';
 import 'package:firbase_chat/core/models/userInfo.dart' as UserData;
@@ -17,8 +18,9 @@ class Proflie extends StatefulWidget {
   final bool back;
   final String name;
   final String image;
+  GetProfilePic userPic;
 
-  Proflie(this.back,{this.name,this.image});
+  Proflie(this.back,{this.name,this.image,this.userPic});
   @override
   _ProflieState createState() => _ProflieState();
 }
@@ -132,8 +134,8 @@ class _ProflieState extends State<Proflie>
     try {
       if (this.selectedImage != null) {
         return Container(
-            width: (height * 0.24) / 1.2,
-            height: (height * 0.24) / 1.2,
+            width: (height * 0.18) / 1.2,
+            height: (height * 0.18) / 1.2,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               image: DecorationImage(
@@ -145,8 +147,8 @@ class _ProflieState extends State<Proflie>
         return Container(
             child: widget.image != "" ? Image.network(widget.image) : Image.asset(
               'icons/user_profilr_pic@3x.png',
-              width: (height * 0.24) / 1.2,
-              height: (height * 0.24) / 1.2,
+              width: (height * 0.18) / 1.2,
+              height: (height * 0.18) / 1.2,
               fit: BoxFit.cover,
             ),
             decoration: BoxDecoration(
@@ -165,8 +167,7 @@ class _ProflieState extends State<Proflie>
     var sizedBox = SizedBox(
       height: 80,
     );
-    return SafeArea(
-        child: Scaffold(
+    return Scaffold(
             body: Container(
                 height: double.infinity,
                 child: Stack(alignment: Alignment.topCenter, children: <Widget>[
@@ -198,10 +199,10 @@ class _ProflieState extends State<Proflie>
                     child: _logout(),
                   ),
                   Positioned(
-                    top: (screenHeight * 0.24 -
-                        ((screenHeight * 0.24) /
+                    top: (screenHeight * 0.30 -
+                        ((screenHeight * 0.32) /
                             2.4)), //2.4=divisor in image width * 2
-                    left: (screenWidth / 2) - (((screenHeight * 0.24) / 2.4)),
+                    left: (screenWidth / 2) - (((screenHeight * 0.18) / 2.4)),
                     child: GestureDetector(
                       child: _profile(screenHeight),
                       onTap: () {
@@ -241,10 +242,12 @@ class _ProflieState extends State<Proflie>
                             this.name = controller.text;
                             if (this.name != null && this.name != "") {
                               String url = await _saveUserData();
+                              if (widget.userPic != null){
+                              widget.userPic.getCurrentProfile(url);
+                              }
                               await createNewuser(url).then((value) {
                                 if ((widget.back == false) && (value == true)) {
-                                  Navigator.of(context).pushReplacementNamed(
-                                      AppConstants.chatList);
+                                  Navigator.pushNamed(context, AppConstants.chatList);
                                 } else {
                                   Navigator.of(context).pop();
                                 }
@@ -270,7 +273,7 @@ class _ProflieState extends State<Proflie>
                   //     ],
                   //   ),
                   // ))
-                ]))));
+                ])));
   }
 
   @override
@@ -279,4 +282,7 @@ class _ProflieState extends State<Proflie>
       this.selectedImage = _image;
     });
   }
+}
+abstract class GetProfilePic {
+  getCurrentProfile(String pic);
 }

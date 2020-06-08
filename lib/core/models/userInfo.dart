@@ -8,13 +8,17 @@ class UserInfo {
 
   UserInfo({this.id, this.userName, this.profilePic});
 
-  UserInfo.fromMap(Map snapshot,String documentId) {
+  UserInfo.fromMap(Map snapshot, String documentId) {
     id = documentId ?? "";
-    userName = snapshot["userName"] ?? "";
+    String name = snapshot["userName"][0].toUpperCase() +
+        snapshot["userName"].substring(1);
+    userName = name ?? "";
     profilePic = snapshot["profilePic"] ?? "";
-    friendsList = (snapshot["friendsList"] as List) != null  ? 
-        (snapshot["friendsList"] as List).map((friendInfo) => FriendListInfo.fromMap(friendInfo))
-        .toList() : List<FriendListInfo>() ;
+    friendsList = (snapshot["friendsList"] as List) != null
+        ? (snapshot["friendsList"] as List)
+            .map((friendInfo) => FriendListInfo.fromMap(friendInfo))
+            .toList()
+        : List<FriendListInfo>();
   }
 
   tojson() {

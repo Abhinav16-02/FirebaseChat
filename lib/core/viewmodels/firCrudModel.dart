@@ -6,30 +6,23 @@ import 'package:flutter/material.dart';
 class FirCrudModel extends ChangeNotifier {
   String name = "Abc";
   String image = "";
-  // String get image => "";
-  // set image(String value){
-  //   image = value;
-  //   notifyListeners();
-  // }
- notify(String url,String userName){
-   image = url;
-   name = userName;
-   notifyListeners();
- }
+
+  notify(String url, String userName) {
+    image = url;
+    name = userName;
+  }
+
   FirebaseApi _firApi = locator<FirebaseApi>();
 
   Stream<QuerySnapshot> fetchAllUser() {
     return _firApi.getAllUsers();
   }
 
-///////
-  Future<String> createNewUser(Map userinfo) async {
-    return _firApi.setNewUser(userinfo);
+  Future<DocumentSnapshot> fetchCurrentUserProfilePic() async {
+    return await _firApi.getCurrentUserImage();
   }
 
   Future addToFriendList(Map friendInfo, String id) async {
     return _firApi.setFriendlist(friendInfo, id);
   }
-
-  
 }

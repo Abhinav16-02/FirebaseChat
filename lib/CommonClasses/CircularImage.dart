@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firbase_chat/Extensions/Extensions.dart';
 
 class RoundedImage extends StatelessWidget {
   final String imageUrl;
@@ -11,17 +12,10 @@ class RoundedImage extends StatelessWidget {
     return Container(
       height: width ,
       width: width,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(
-          Radius.circular(borderRadius),
-        ),
-        image: DecorationImage(
-          image: imageUrl != ""
-              ? Image.network(imageUrl).image
-              : Image.asset("icons/user_profilr_pic@3x.png"),
-          fit: BoxFit.cover,
-        ),
-      ),
-    );
+      child: imageUrl != "" 
+               ? ClipRRect(child: Image.asset("icons/user_profilr_pic@3x.png").getImageFrom(imageUrl),
+               borderRadius: BorderRadius.circular(borderRadius),) : 
+               Image.asset("icons/user_profilr_pic@3x.png"),
+      );
   }
 }

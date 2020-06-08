@@ -19,9 +19,9 @@ class Router {
       case AppConstants.chatScreen:
         return MaterialPageRoute(
             builder: (_) =>
-                ChatScreen(arguments["chatId"], arguments["userId"],arguments["profilePic"]));
+                ChatScreen(arguments["chatId"], arguments["userId"],arguments["userInfo"]));
       case AppConstants.profile:
-        return MaterialPageRoute(builder: (_) => Proflie(arguments["back"],name: arguments["name"],image:arguments["image"]));
+        return MaterialPageRoute(builder: (_) => Proflie(arguments["back"],name: arguments["name"],image:arguments["image"],userPic:arguments["listner"]));
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(

@@ -2,13 +2,13 @@ import 'package:firbase_chat/ChatList.dart';
 import 'package:firbase_chat/CommonClasses/GradientButton.dart';
 import 'package:firbase_chat/Utilities/Utility.dart';
 import 'package:firbase_chat/appconstants.dart';
-import 'package:firbase_chat/profile.dart';
 import 'package:firbase_chat/service_locator.dart';
 import 'package:firbase_chat/ui/router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firbase_chat/VerifyOtp.Dart';
 import 'package:firbase_chat/Extensions/Extensions.dart';
+import 'package:flutter_statusbarcolor/flutter_statusbarcolor.dart';
 import 'ui/shared/Alert.dart';
 import 'ui/shared/sharedPreferences.dart';
 
@@ -30,13 +30,14 @@ Future<void> main() async {
   MyApp(this._login, this._hasName);
   Widget _home() {
      if (_login) {
-       return _hasName ? ChatList() : Proflie(true,name:"",image:"");
+       return _hasName ? ChatList() : ChatApp();//Proflie(true,name:"",image:"");
      } else {
        return ChatApp();
      }
   }
   @override
   Widget build(BuildContext context) {
+   // FlutterStatusbarcolor.setStatusBarColor(Colors.white);
     return MaterialApp(
     theme: ThemeData(
       snackBarTheme:

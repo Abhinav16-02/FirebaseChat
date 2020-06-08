@@ -165,10 +165,11 @@ class _VerifyOtpState extends State<VerifyOtp> {
       saveInfo(user.user.uid);
       bool userExist = await _firApi.checkUserExist();
       if (userExist) {
-        Navigator.of(context).pushReplacementNamed(AppConstants.chatList);
+        Navigator.pushNamed(context, AppConstants.chatList);
       } else {
         //Navigator.pushNamed(context, AppConstants.profile);
-        Navigator.of(context).pushReplacementNamed(AppConstants.profile);
+        Navigator.pushNamed(context, AppConstants.profile,
+            arguments: {"back": false, "name": "", "image": ""});
       }
       //    Navigator.push(
       //       context, MaterialPageRoute(builder: (context) => ChatList()));
