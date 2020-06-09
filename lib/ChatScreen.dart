@@ -8,6 +8,7 @@ import 'package:firbase_chat/core/models/messageInfo.dart';
 import 'package:firbase_chat/core/models/userInfo.dart';
 import 'package:firbase_chat/core/viewmodels/chatModel.dart';
 import 'package:firbase_chat/service_locator.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'CommonClasses/imagePickerHandler.dart';
 import 'package:provider/provider.dart';
@@ -32,6 +33,7 @@ class _ChatScreenState extends State<ChatScreen>
   ScrollController _msgListController;
   ImagePickerHandler imagePicker;
   AnimationController _controller;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -76,8 +78,14 @@ class _ChatScreenState extends State<ChatScreen>
   }
 
   _sendImage(String imagePath) async {
+    setState(() {
+      isLoading = true;
+    });
     String url = await modal.uploadFile(imagePath);
-    _sendMessage(imageUrl:url);
+    setState(() {
+      isLoading = false;
+    });
+    _sendMessage(imageUrl: url);
   }
 
   @override
@@ -85,206 +93,239 @@ class _ChatScreenState extends State<ChatScreen>
     return ChangeNotifierProvider(
         create: (context) => modal,
         child: Scaffold(
-            body: Container(
-                alignment: Alignment.center,
-                child: Column(children: <Widget>[
-                  Container(
-                    height: Utility().screenHeight(context) * 0.24,
-                    child: GradientAppBar(widget.chatId, widget.userInfo),
-                  ),
-                  Expanded(
-                    child: Consumer<ChatModel>(
-                        builder: (context, model, widget) => StreamBuilder(
-                              stream: model.fetchAllMessages(chatId),
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<QuerySnapshot> snapshot) {
-                                if (snapshot.hasData) {
-                                  allMessages = snapshot.data.documents
-                                      .map((details) =>
-                                          MessageInfo.fromMap(details.data))
-                                      .toList();
-                                  return ListView.builder(
-                                      reverse: true,
-                                      controller: _msgListController,
-                                      itemCount: allMessages.length,
-                                      itemBuilder: (context, index) {
-                                        MessageInfo msg = allMessages[index];
-                                        String msgBy =
-                                            msg.sentBy == currentUserId
-                                                ? "self"
-                                                : "";
+            body: Stack(children: <Widget>[
+          Container(
+              alignment: Alignment.center,
+              child: Column(children: <Widget>[
+                Container(
+                  height: Utility().screenHeight(context) * 0.24,
+                  child: GradientAppBar(widget.chatId, widget.userInfo),
+                ),
+                Expanded(
+                  child: Consumer<ChatModel>(
+                      builder: (context, model, widget) => StreamBuilder(
+                            stream: model.fetchAllMessages(chatId),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<QuerySnapshot> snapshot) {
+                              if (snapshot.hasData) {
+                                allMessages = snapshot.data.documents
+                                    .map((details) =>
+                                        MessageInfo.fromMap(details.data))
+                                    .toList();
+                                return ListView.builder(
+                                    reverse: true,
+                                    controller: _msgListController,
+                                    itemCount: allMessages.length,
+                                    itemBuilder: (context, index) {
+                                      MessageInfo msg = allMessages[index];
+                                      String msgBy = msg.sentBy == currentUserId
+                                          ? "self"
+                                          : "";
 
-                                        return msg.messageType ==
-                                                AppConstants.msg
-                                            ?
-                                            //Message
-                                            Column(
-                                                crossAxisAlignment: msgBy ==
-                                                        "self"
-                                                    ? CrossAxisAlignment.end
-                                                    : CrossAxisAlignment.start,
-                                                children: <Widget>[
-                                                  SizedBox(height: 5),
-                                                  ConstrainedBox(
-                                                      constraints: BoxConstraints(
-                                                          maxWidth: Utility()
-                                                              .screenWidth(
-                                                                  context,
-                                                                  multipliedBy:
-                                                                      0.75)),
+                                      return msg.messageType == AppConstants.msg
+                                          ?
+                                          //Message
+                                          Column(
+                                              crossAxisAlignment: msgBy ==
+                                                      "self"
+                                                  ? CrossAxisAlignment.end
+                                                  : CrossAxisAlignment.start,
+                                              children: <Widget>[
+                                                SizedBox(height: 5),
+                                                ConstrainedBox(
+                                                    constraints: BoxConstraints(
+                                                        maxWidth: Utility()
+                                                            .screenWidth(
+                                                                context,
+                                                                multipliedBy:
+                                                                    0.75)),
+                                                    child: Container(
+                                                      child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .end,
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        mainAxisAlignment: msgBy ==
+                                                                "self"
+                                                            ? MainAxisAlignment
+                                                                .end
+                                                            : MainAxisAlignment
+                                                                .start,
+                                                        children: <Widget>[
+                                                          Flexible(
+                                                            child: Text(
+                                                              msg.message,
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .black),
+                                                            ),
+                                                          ),
+                                                          SizedBox(
+                                                            width: 10,
+                                                          ),
+                                                          Text(
+                                                            "${msg.sentTime}",
+                                                            style: TextStyle(
+                                                                fontSize: 12,
+                                                                color: Theme.of(
+                                                                        context)
+                                                                    .primaryColor),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      padding:
+                                                          EdgeInsets.fromLTRB(
+                                                              15.0,
+                                                              10.0,
+                                                              15.0,
+                                                              10.0),
+                                                      decoration: BoxDecoration(
+                                                          color:
+                                                              Colors.grey[200],
+                                                          borderRadius: BorderRadius.only(
+                                                              topLeft: Radius
+                                                                  .circular(10),
+                                                              topRight: Radius
+                                                                  .circular(10),
+                                                              bottomLeft: msgBy ==
+                                                                      "self"
+                                                                  ? Radius.circular(
+                                                                      10)
+                                                                  : Radius
+                                                                      .circular(
+                                                                          0),
+                                                              bottomRight: msgBy ==
+                                                                      "self"
+                                                                  ? Radius.circular(0)
+                                                                  : Radius.circular(10))),
+                                                      margin:
+                                                          EdgeInsets.fromLTRB(
+                                                              20, 0, 20, 0),
+                                                    )),
+                                                SizedBox(height: 5),
+                                                //Text(msg.sentTime)
+                                              ],
+                                            )
+                                          : //Image
+                                          Column(
+                                              crossAxisAlignment: msgBy ==
+                                                      "self"
+                                                  ? CrossAxisAlignment.end
+                                                  : CrossAxisAlignment.start,
+                                              children: <Widget>[
+                                                SizedBox(height: 5),
+                                                ConstrainedBox(
+                                                    constraints: BoxConstraints(
+                                                        maxWidth: Utility()
+                                                            .screenWidth(
+                                                                context,
+                                                                multipliedBy:
+                                                                    0.75)),
+                                                    child: Container(
                                                       child: Container(
-                                                        child: Text(
-                                                          "${msg.message}",
-                                                          style: TextStyle(
-                                                              color:
-                                                                  Colors.black),
-                                                        ),
-                                                        padding:
-                                                            EdgeInsets.fromLTRB(
-                                                                15.0,
-                                                                10.0,
-                                                                15.0,
-                                                                10.0),
-                                                        decoration: BoxDecoration(
-                                                            color: Colors
-                                                                .grey[200],
-                                                            borderRadius: BorderRadius.only(
-                                                                topLeft: Radius
-                                                                    .circular(
-                                                                        10),
-                                                                topRight:
-                                                                    Radius.circular(
-                                                                        10),
-                                                                bottomLeft: msgBy ==
-                                                                        "self"
-                                                                    ? Radius.circular(
-                                                                        10)
-                                                                    : Radius.circular(
-                                                                        0),
-                                                                bottomRight: msgBy ==
-                                                                        "self"
-                                                                    ? Radius.circular(0)
-                                                                    : Radius.circular(10))),
                                                         margin:
                                                             EdgeInsets.fromLTRB(
-                                                                20, 0, 20, 0),
-                                                      )),
-                                                  SizedBox(height: 5),
-                                                ],
-                                              )
-                                            : //Image
-                                            Column(
-                                                crossAxisAlignment: msgBy ==
-                                                        "self"
-                                                    ? CrossAxisAlignment.end
-                                                    : CrossAxisAlignment.start,
-                                                children: <Widget>[
-                                                  SizedBox(height: 5),
-                                                  ConstrainedBox(
-                                                      constraints: BoxConstraints(
-                                                          maxWidth: Utility()
-                                                              .screenWidth(
-                                                                  context,
-                                                                  multipliedBy:
-                                                                      0.75)),
-                                                      child: Container(
-                                                        child: Container(
-                                                          margin: EdgeInsets
-                                                              .fromLTRB(
-                                                                  0, 0, 0, 0),
-                                                          child: Material(
-                                                              child: RoundedImage(
-                                                                  msg.fileUrl,
-                                                                  10,
-                                                                  200)),
-                                                        ),
-                                                        margin:
-                                                            EdgeInsets.fromLTRB(
-                                                                20, 0, 20, 0),
-                                                      )),
-                                                  SizedBox(height: 5),
-                                                ],
-                                              );
-                                      });
-                                } else {
-                                  return Container();
-                                }
-                              },
-                            )),
-                  ),
-                  Container(
-                      height: 80,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Expanded(
-                              child: Padding(
-                                  padding: EdgeInsets.fromLTRB(20, 0, 10, 0),
-                                  child: Container(
-                                      decoration: BoxDecoration(
-                                          border:
-                                              Border.all(color: Colors.grey),
-                                          borderRadius:
-                                              BorderRadius.circular(40)),
-                                      alignment: Alignment.center,
-                                      height: 60,
-                                      padding:
-                                          EdgeInsets.fromLTRB(10, 0, 15, 5),
-                                      child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: <Widget>[
-                                            GestureDetector(
-                                                child: Container(
-                                                  width: 25,
-                                                  height: 25,
-                                                  child: Image.asset(
-                                                      "icons/plus.png"),
-                                                ),
-                                                onTap: () {
-                                                  imagePicker
-                                                      .showDialog(context);
-                                                }),
-                                            SizedBox(
-                                              width: 10,
-                                            ),
-                                            Flexible(
-                                                child: TextField(
-                                              maxLines: 1,
-                                              controller:
-                                                  _txtfieldMsgController,
-                                              decoration: InputDecoration(
-                                                  fillColor: Colors.green,
-                                                  hintText:
-                                                      "Type your message here",
-                                                  enabledBorder:
-                                                      InputBorder.none,
-                                                  focusedBorder:
-                                                      InputBorder.none),
-                                            ))
-                                          ])))),
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(0, 0, 0, 5),
-                            child: GestureDetector(
+                                                                0, 0, 0, 0),
+                                                        child: Material(
+                                                            child: RoundedImage(
+                                                          msg.fileUrl,
+                                                          10,
+                                                          200,
+                                                          showLoader: true,
+                                                        )),
+                                                      ),
+                                                      margin:
+                                                          EdgeInsets.fromLTRB(
+                                                              20, 0, 20, 0),
+                                                    )),
+                                                SizedBox(height: 5),
+                                              ],
+                                            );
+                                    });
+                              } else {
+                                return Container();
+                              }
+                            },
+                          )),
+                ),
+                //bottom message bar
+                Container(
+                    
+                    height: 50,
+                    margin: EdgeInsets.fromLTRB(0, 5, 0, 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Expanded(
+                            child: Padding(
+                                padding: EdgeInsets.fromLTRB(20, 0, 10, 0),
                                 child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  child: Image.asset("icons/send@2x.png"),
-                                ),
-                                onTap: _sendMessage),
-                          ),
-                          SizedBox(
-                            width: 20,
-                          )
-                        ],
-                      ))
-                ]))));
+                                    decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey),
+                                        borderRadius:
+                                            BorderRadius.circular(40)),
+                                    alignment: Alignment.center,
+                                    height: 60,
+                                    padding: EdgeInsets.fromLTRB(10, 0, 15, 5),
+                                    child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          GestureDetector(
+                                              child: Container(
+                                                width: 25,
+                                                height: 25,
+                                                child: Image.asset(
+                                                    "icons/plus.png"),
+                                              ),
+                                              onTap: () {
+                                                imagePicker.showDialog(context);
+                                              }),
+                                          SizedBox(
+                                            width: 10,
+                                          ),
+                                          Flexible(
+                                              child: TextField(
+                                            maxLines: 1,
+                                            controller: _txtfieldMsgController,
+                                            decoration: InputDecoration(
+                                                fillColor: Colors.green,
+                                                hintText:
+                                                    "Type your message here",
+                                                enabledBorder: InputBorder.none,
+                                                focusedBorder:
+                                                    InputBorder.none),
+                                          ))
+                                        ])))),
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 5),
+                          child: GestureDetector(
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                child: Image.asset("icons/send@2x.png"),
+                              ),
+                              onTap: _sendMessage),
+                        ),
+                        SizedBox(
+                          width: 20,
+                        )
+                      ],
+                    ))
+              ])),
+          (isLoading == true)
+              ? Container(
+                  color: Colors.black26,
+                  child: Center(child: CircularProgressIndicator()))
+              : Container()
+        ])));
   }
 
   @override
   userImage(File _image) {
-    if (_image != null){
-    _sendImage(_image.path);
+    if (_image != null) {
+      _sendImage(_image.path);
     }
   }
 }
@@ -331,12 +372,22 @@ class GradientAppBar extends StatelessWidget {
                           Container(
                               width: 60,
                               height: 60,
+                              // child: userDetails.profilePic != ""
+                              //     ? Image.network(
+                              //         userDetails.profilePic,
+                              //         fit: BoxFit.cover,
+                              //       ).image
+                              //     : Image.asset("icons/chat_profile_user.png"),
                               decoration: BoxDecoration(
                                   image: DecorationImage(
-                                      image: Image.network(
-                                    userDetails.profilePic,
-                                    fit: BoxFit.cover,
-                                  ).image),
+                                      image: userDetails.profilePic != ""
+                                          ? Image.network(
+                                              userDetails.profilePic,
+                                              fit: BoxFit.cover,
+                                            ).image
+                                          : Image.asset(
+                                                  "icons/chat_profile_user.png")
+                                              .image),
                                   borderRadius: BorderRadius.circular(10),
                                   color: Colors.transparent,
                                   border: Border.all(

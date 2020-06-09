@@ -25,4 +25,5 @@ class FirCrudModel extends ChangeNotifier {
   Future addToFriendList(Map friendInfo, String id) async {
     return _firApi.setFriendlist(friendInfo, id);
   }
+  
 }

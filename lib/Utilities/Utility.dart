@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
+
 
 class Utility {
 
@@ -16,5 +19,11 @@ class Utility {
 
   double screenHeight(BuildContext context,{double multipliedBy = 1}) {
     return screenSize(context).height * multipliedBy;
+  }
+  String changeTimeFormat(Timestamp timeStamp){
+  DateTime msgDate = DateTime.fromMillisecondsSinceEpoch(
+        timeStamp.millisecondsSinceEpoch,
+        isUtc: true);
+    return formatDate(msgDate.toLocal(), [hh, ':', nn , " " ,am]);
   }
 }

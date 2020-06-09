@@ -20,7 +20,7 @@ class Proflie extends StatefulWidget {
   final String image;
   GetProfilePic userPic;
 
-  Proflie(this.back,{this.name,this.image,this.userPic});
+  Proflie(this.back, {this.name, this.image, this.userPic});
   @override
   _ProflieState createState() => _ProflieState();
 }
@@ -33,6 +33,7 @@ class _ProflieState extends State<Proflie>
   TextEditingController controller = TextEditingController();
   File selectedImage;
   String name;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -43,7 +44,8 @@ class _ProflieState extends State<Proflie>
     );
     imagePicker = ImagePickerHandler(this, _controller);
     imagePicker.init();
-    _getname();
+    controller.text = widget.name;
+    // _getname();
   }
 
   @override
@@ -59,7 +61,7 @@ class _ProflieState extends State<Proflie>
       if (name != null) {
         this.name = name;
         controller.text = name;
-      }else{
+      } else {
         this.name = widget.name;
         controller.text = name;
       }
@@ -145,14 +147,19 @@ class _ProflieState extends State<Proflie>
             ));
       } else {
         return Container(
-            child: widget.image != "" ? Image.network(widget.image) : Image.asset(
-              'icons/user_profilr_pic@3x.png',
-              width: (height * 0.18) / 1.2,
-              height: (height * 0.18) / 1.2,
-              fit: BoxFit.cover,
-            ),
+            width: (height * 0.18) / 1.2,
+            height: (height * 0.18) / 1.2,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
+              image: DecorationImage(
+                image: widget.image != ""
+                    ? Image.network(widget.image).image
+                    : Image.asset('icons/user_profilr_pic@3x.png',
+                            width: (height * 0.18) / 1.2,
+                            height: (height * 0.18) / 1.2)
+                        .image,
+                fit: BoxFit.cover,
+              ),
             ));
       }
     } catch (e) {
@@ -168,112 +175,122 @@ class _ProflieState extends State<Proflie>
       height: 80,
     );
     return Scaffold(
-            body: Container(
-                height: double.infinity,
-                child: Stack(alignment: Alignment.topCenter, children: <Widget>[
-                  Container(
-                      alignment: Alignment.center,
-                      height: screenHeight * 0.24,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                              bottomLeft:
-                                  Radius.circular((screenHeight * 0.24) * 0.4),
-                              bottomRight:
-                                  Radius.circular((screenHeight * 0.24) * 0.4)),
-                          gradient: LinearGradient(colors: <Color>[
-                            Color.fromRGBO(69, 191, 140, 1),
-                            Color.fromRGBO(19, 146, 130, 1)
-                          ]))),
-                  Positioned(
-                    top: (screenHeight * 0.24) / 2 - 20,
-                    height: 40,
-                    width: 40,
-                    left: 10,
-                    child: _setBackButton(),
-                  ),
-                  Positioned(
-                    top: (screenHeight * 0.24) / 2 - 20,
-                    height: 40,
-                    width: 100,
-                    right: 10,
-                    child: _logout(),
-                  ),
-                  Positioned(
-                    top: (screenHeight * 0.30 -
-                        ((screenHeight * 0.32) /
-                            2.4)), //2.4=divisor in image width * 2
-                    left: (screenWidth / 2) - (((screenHeight * 0.18) / 2.4)),
-                    child: GestureDetector(
-                      child: _profile(screenHeight),
-                      onTap: () {
-                        imagePicker.showDialog(context);
-                      },
+        body: Container(
+            height: double.infinity,
+            child: Stack(alignment: Alignment.topCenter, children: <Widget>[
+              Container(
+                  alignment: Alignment.center,
+                  height: screenHeight * 0.24,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                          bottomLeft:
+                              Radius.circular((screenHeight * 0.24) * 0.4),
+                          bottomRight:
+                              Radius.circular((screenHeight * 0.24) * 0.4)),
+                      gradient: LinearGradient(colors: <Color>[
+                        Color.fromRGBO(69, 191, 140, 1),
+                        Color.fromRGBO(19, 146, 130, 1)
+                      ]))),
+              Positioned(
+                top: (screenHeight * 0.24) / 2 - 20,
+                height: 40,
+                width: 40,
+                left: 10,
+                child: _setBackButton(),
+              ),
+              Positioned(
+                top: (screenHeight * 0.24) / 2 - 20,
+                height: 40,
+                width: 100,
+                right: 10,
+                child: _logout(),
+              ),
+              Positioned(
+                top: (screenHeight * 0.24 -
+                    ((screenHeight * 0.18) /
+                        2.4)), //2.4=divisor in image width * 2
+                left: (screenWidth / 2) - (((screenHeight * 0.18) / 2.4)),
+                child: GestureDetector(
+                  child: _profile(screenHeight),
+                  onTap: () {
+                    imagePicker.showDialog(context);
+                  },
+                ),
+              ),
+              Positioned(
+                //width: (screenWidth / 2),
+                top: (screenHeight * 0.24 + ((screenHeight * 0.24) / 3)),
+                child: Column(
+                  children: <Widget>[
+                    sizedBox,
+                    Text("User Name"),
+                    Container(
+                      width: (screenWidth / 2),
+                      child: TextField(
+                        controller: controller,
+                        style: TextStyle(fontSize: 22),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                  ),
-                  Positioned(
-                    //width: (screenWidth / 2),
-                    top: (screenHeight * 0.24 + ((screenHeight * 0.24) / 3)),
-                    child: Column(
-                      children: <Widget>[
-                        sizedBox,
-                        Text("User Name"),
-                        Container(
-                          width: (screenWidth / 2),
-                          child: TextField(
-                            controller: controller,
-                            style: TextStyle(fontSize: 22),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 100,
-                        ),
-                        RaisedGradientButton(
-                          width: (screenWidth * 0.75),
-                          child: Text(
-                            "SAVE",
-                            style: TextStyle().getStyleButton(context),
-                          ),
-                          gradient: LinearGradient(colors: <Color>[
-                            Color.fromRGBO(69, 191, 140, 1),
-                            Color.fromRGBO(19, 146, 130, 1)
-                          ]),
-                          onPressed: () async {
-                            this.name = controller.text;
-                            if (this.name != null && this.name != "") {
-                              String url = await _saveUserData();
-                              if (widget.userPic != null){
-                              widget.userPic.getCurrentProfile(url);
-                              }
-                              await createNewuser(url).then((value) {
-                                if ((widget.back == false) && (value == true)) {
-                                  Navigator.pushNamed(context, AppConstants.chatList);
-                                } else {
-                                  Navigator.of(context).pop();
-                                }
-                              });
+                    SizedBox(
+                      height: 100,
+                    ),
+                    RaisedGradientButton(
+                      width: (screenWidth * 0.75),
+                      child: Text(
+                        "SAVE",
+                        style: TextStyle().getStyleButton(context),
+                      ),
+                      gradient: LinearGradient(colors: <Color>[
+                        Color.fromRGBO(69, 191, 140, 1),
+                        Color.fromRGBO(19, 146, 130, 1)
+                      ]),
+                      onPressed: () async {
+                        this.name = controller.text;
+                        if (this.name != null && this.name != "") {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          String url = await _saveUserData();
+                          setState(() {
+                            isLoading = false;
+                          });
+                          if (widget.userPic != null) {
+                            widget.userPic.getCurrentProfile(url);
+                          }
+                          await createNewuser(url).then((value) {
+                            if ((widget.back == false) && (value == true)) {
+                              Navigator.pushNamed(
+                                  context, AppConstants.chatList);
                             } else {
-                              AlertFormState().showDialogBox(context, "Error",
-                                  "Name is required. Please enter your name.");
+                              Navigator.of(context).pop();
                             }
-                          },
-                        )
-                      ],
-                    ),
-                  ),
-                  // Positioned(
-                  //     child: Container(
-                  //   width: Utility().screenWidth(context, multipliedBy: 0.5),
-                  //   child: Column(
-                  //     children: <Widget>[
-                  //       Text("User Name"),
-                  //       TextField(
-                  //         decoration: InputDecoration(),
-                  //       )
-                  //     ],
-                  //   ),
-                  // ))
-                ])));
+                          });
+                        } else {
+                          AlertFormState().showDialogBox(context, "Error",
+                              "Name is required. Please enter your name.");
+                        }
+                      },
+                    )
+                  ],
+                ),
+              ),
+              isLoading
+                  ? Container(color: Colors.black26 ,
+                  child: Center(child: CircularProgressIndicator())) : Container()
+              // Positioned(
+              //     child: Container(
+              //   width: Utility().screenWidth(context, multipliedBy: 0.5),
+              //   child: Column(
+              //     children: <Widget>[
+              //       Text("User Name"),
+              //       TextField(
+              //         decoration: InputDecoration(),
+              //       )
+              //     ],
+              //   ),
+              // ))
+            ])));
   }
 
   @override
@@ -283,6 +300,7 @@ class _ProflieState extends State<Proflie>
     });
   }
 }
+
 abstract class GetProfilePic {
   getCurrentProfile(String pic);
 }

@@ -16,14 +16,17 @@ extension Style on TextStyle {
 }
 
 extension CachedImage on Image {
-  CachedNetworkImage getImageFrom(String stringUrl,{bool showLoader,double width=40,double height=40}) {
-   return  CachedNetworkImage(
-    
-      placeholder: (context,url) => showLoader == true ? CircularProgressIndicator() : null,
-     
-      imageUrl: stringUrl,
-      width: width,
-      height:height
-    );
+  CachedNetworkImage getImageFrom(String stringUrl,
+      {bool showLoader, double width = 40, double height = 40}) {
+    return CachedNetworkImage(
+        placeholder: (context, url) => showLoader == true
+            ? Center(
+                heightFactor: 50,
+                child: CircularProgressIndicator(),
+              )
+            : null,
+        imageUrl: stringUrl,
+        width: width,
+        height: height);
   }
 }

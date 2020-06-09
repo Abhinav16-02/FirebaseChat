@@ -5,7 +5,8 @@ class RoundedImage extends StatelessWidget {
   final String imageUrl;
   final double borderRadius;
   final double width;
-  RoundedImage(this.imageUrl,this.borderRadius,this.width);
+  final bool showLoader;
+  RoundedImage(this.imageUrl,this.borderRadius,this.width,{this.showLoader=false});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +14,7 @@ class RoundedImage extends StatelessWidget {
       height: width ,
       width: width,
       child: imageUrl != "" 
-               ? ClipRRect(child: Image.asset("icons/user_profilr_pic@3x.png").getImageFrom(imageUrl),
+               ? ClipRRect(child: Image.asset("icons/user_profilr_pic@3x.png").getImageFrom(imageUrl,showLoader: showLoader),
                borderRadius: BorderRadius.circular(borderRadius),) : 
                Image.asset("icons/user_profilr_pic@3x.png"),
       );

@@ -20,7 +20,7 @@ class ChatList extends StatefulWidget {
 class _ChatListState extends State<ChatList> with GetProfilePic {
   final firModel = locator<FirCrudModel>();
   // GetProfilePic userPic ;
-  UserInfo userinfo = UserInfo();
+  // UserInfo userinfo = UserInfo();
   _getuserInfo() async {
     var name = await SharedData().getCurrentName();
     var image = await SharedData().getCurrentUserImage();
@@ -34,9 +34,10 @@ class _ChatListState extends State<ChatList> with GetProfilePic {
     //  });
   }
 
+//abstract method
   getCurrentProfile(pic) {
     setState(() {
-      this.userinfo.profilePic = pic;
+      firModel.image = pic;
     });
   }
 
@@ -72,58 +73,53 @@ class _ChatListState extends State<ChatList> with GetProfilePic {
   void fetchUserDetails() async {
     await firModel.fetchCurrentUserProfilePic().then((value) {
       setState(() {
-        userinfo = UserInfo.fromMap(value.data, "");
+        UserInfo user = UserInfo.fromMap(value.data, "");
+        firModel.image = user.profilePic;
+        firModel.name = user.userName;
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return
-        //  MultiProvider(
-        //     providers: [
-        //       ChangeNotifierProvider<FirCrudModel>(
-        //           create: (context) => FirCrudModel()),
-        //       Provider(create: (context) => ProfileViewModel()),
-        //     ],
-        //     child: Consumer<ProfileViewModel>(
-        //         builder: (context, model, child) =>
-        Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-        elevation: 0.0,
-        // backgroundColor: Colors.white,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              "Chats",
-              style: TextStyle(fontStyle: FontStyle.normal, fontSize: 30)
-                  .getStyleBody1(context),
-            )
-          ],
-        ),
-        actions: <Widget>[
-          Padding(
-              padding: EdgeInsets.only(right: 30, top: 10, bottom: 10),
-              child: InkWell(
-                  child: _profileImage(
-                      userinfo.profilePic), //RoundedImage(model.image, 5, 35),
-                  onTap: () {
-                    Navigator.pushNamed(context, AppConstants.profile,
-                        arguments: {
-                          "listner": this,
-                          "back": true,
-                          "name": firModel.name,
-                          "image": firModel.image
-                        });
-                  })),
-        ],
-      ),
-      body: AllUserList(),
-    );
+    return WillPopScope(
+        onWillPop: () async => false,
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            automaticallyImplyLeading: false,
+            elevation: 0.0,
+            // backgroundColor: Colors.white,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  "Chats",
+                  style: TextStyle(fontStyle: FontStyle.normal, fontSize: 30)
+                      .getStyleBody1(context),
+                )
+              ],
+            ),
+            actions: <Widget>[
+              Padding(
+                  padding: EdgeInsets.only(right: 30, top: 10, bottom: 10),
+                  child: InkWell(
+                      child: _profileImage(
+                          firModel.image), //RoundedImage(model.image, 5, 35),
+                      onTap: () {
+                        Navigator.pushNamed(context, AppConstants.profile,
+                            arguments: {
+                              "listner": this,
+                              "back": true,
+                              "name": firModel.name,
+                              "image": firModel.image
+                            });
+                      })),
+            ],
+          ),
+          body: AllUserList(),
+        ));
   }
 }
 
@@ -134,18 +130,52 @@ class AllUserList extends StatefulWidget {
 
 class _AllUserListState extends State<AllUserList> {
   final firModel = locator<FirCrudModel>();
+  final _searchController = TextEditingController();
   SharedData sharedData;
   List<UserInfo> allUsers;
+  List<UserInfo> placeHolderUsersList;
   String userID;
+  bool search = false;
 
   @override
   void initState() {
     super.initState();
     _getUserID();
+    textChanged();
+  }
+
+  textChanged() {
+    _searchController.addListener(() {
+      if (_searchController.text != "") {
+        setState(() {
+          search = true;
+          List<UserInfo> searchResult = allUsers.where((user) {
+            return user.userName.toLowerCase().contains(_searchController.text);
+          }).toList();
+          //if (searchResult != null){
+          placeHolderUsersList = searchResult;
+          // }
+        });
+      } else {
+        setState(() {
+          search = false;
+          placeHolderUsersList = [];
+        });
+      }
+    });
+    // setState(() {
+    //   search = true;
+    //   List<UserInfo> searchResult = allUsers.where((user) {
+    //     return user.userName.contains(value);
+    //   }).toList();
+    //   //if (searchResult != null){
+    //   placeHolderUsersList = searchResult;
+    //   // }
+    // });
   }
 
   _getUserID() async {
-    String userId = await SharedData().getCurrentUserId();
+    String userId = await SharedData().getCurrentUIID();
     this.userID = userId;
   }
 
@@ -153,14 +183,14 @@ class _AllUserListState extends State<AllUserList> {
     //saving friend to my frient list
     Map othersInfo =
         FriendListInfo(chatId: chatId, userId: otherUserId).tojson();
-   // Provider.of<FirCrudModel>(context, listen: false)
-        firModel.addToFriendList(othersInfo, selfId);
+    // Provider.of<FirCrudModel>(context, listen: false)
+    firModel.addToFriendList(othersInfo, selfId);
 
     //saving myself to friends friend list.
 
     Map selfInfo = FriendListInfo(chatId: chatId, userId: selfId).tojson();
     //Provider.of<FirCrudModel>(context, listen: false)
-        firModel.addToFriendList(selfInfo, otherUserId);
+    firModel.addToFriendList(selfInfo, otherUserId);
   }
 
   @override
@@ -185,6 +215,7 @@ class _AllUserListState extends State<AllUserList> {
                 color: Colors.white),
             child: Center(
               child: TextField(
+                controller: _searchController,
                 decoration: InputDecoration(
                     border: InputBorder.none,
                     prefixIcon: Image.asset("icons/search.png"),
@@ -192,94 +223,187 @@ class _AllUserListState extends State<AllUserList> {
               ),
             )),
         Expanded(
-            child: StreamBuilder(
-                stream: firModel.fetchAllUser(),
-                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                  if (snapshot.hasData) {
-                    allUsers = snapshot.data.documents
-                        .map<UserInfo>(
-                            (doc) => UserInfo.fromMap(doc.data, doc.documentID))
-                        .toList();
-                    return ListView.builder(
-                        itemCount: allUsers.length,
-                        itemBuilder: (context, index) {
-                          UserInfo user = allUsers[index];
-                          if (user.id == userID) {
-                            //firModel.notify(user.profilePic, user.userName);
-                            return Container();
-                          }
-                          return Column(children: <Widget>[
-                            Padding(
-                              padding: EdgeInsets.only(top: 20),
-                              child: ListTile(
-                                leading: RoundedImage(user.profilePic, 10, 50),
-                                // Image.asset(
-                                //     "icons/user_profilr_pic@3x.png"),
-                                trailing: Padding(
-                                  padding: EdgeInsets.only(top: 30),
-                                  child: Image.asset("icons/next@2x.png",
-                                      width: 15, height: 15),
-                                ),
-                                title: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Text(allUsers[index].userName),
-                                    Text("2:10 pm")
-                                  ],
-                                ),
-                                subtitle: Padding(
-                                  padding: EdgeInsets.only(top: 10),
-                                  child: Row(
-                                    children: <Widget>[
-                                      Image.asset("icons/seen@3x.png",
-                                          width: 15, height: 15),
-                                      SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text("Last Message")
-                                    ],
-                                  ),
-                                ),
-                                onTap: () {
-                                  String uniqueId;
-                                  
-                                  if (allUsers[index].id.hashCode >=
-                                      userID.hashCode) {
-                                    uniqueId = "$userID-${allUsers[index].id}";
-                                  } else {
-                                    uniqueId = "${allUsers[index].id}-$userID";
-                                  }
-                                  setUsersToFriendlists(
-                                      userID, allUsers[index].id, uniqueId);
+            child: (placeHolderUsersList != null && search == true)
+                ? getListView()
+                : StreamBuilder(
+                    stream: firModel.fetchAllUser(),
+                    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.hasData) {
+                        allUsers = snapshot.data.documents
+                            .map<UserInfo>((doc) =>
+                                UserInfo.fromMap(doc.data, doc.documentID))
+                            .toList();
+                        placeHolderUsersList = allUsers;
+                        //List view builder
+                        return getListView();
+                        // return ListView.builder(
+                        //     itemCount: placeHolderUsersList.length,
+                        //     itemBuilder: (context, index) {
+                        //       UserInfo user = placeHolderUsersList[index];
+                        //       if (user.id == userID) {
+                        //         //firModel.notify(user.profilePic, user.userName);
+                        //         return Container();
+                        //       }
+                        //       return Column(children: <Widget>[
+                        //         Padding(
+                        //           padding: EdgeInsets.only(top: 20),
+                        //           child: ListTile(
+                        //             leading:
+                        //                 RoundedImage(user.profilePic, 10, 50),
+                        //             // Image.asset(
+                        //             //     "icons/user_profilr_pic@3x.png"),
+                        //             trailing:
+                        //                 //  Padding(
+                        //                 //   padding: EdgeInsets.only(top: 0),
+                        //                 //   child:
+                        //                 Image.asset("icons/next@2x.png",
+                        //                     width: 15, height: 15),
+                        //             // ),
+                        //             title: Text(
+                        //                 placeHolderUsersList[index].userName),
+                        //             //Row(
+                        //             //   mainAxisAlignment:
+                        //             //       MainAxisAlignment.spaceBetween,
+                        //             //   children: <Widget>[
+                        //             //     Text(allUsers[index].userName),
+                        //             //     Text("2:10 pm")
+                        //             //   ],
+                        //             // ),
+                        //             // subtitle: Padding(
+                        //             //   padding: EdgeInsets.only(top: 10),
+                        //             //   child: Row(
+                        //             //     children: <Widget>[
+                        //             //       Image.asset("icons/seen@3x.png",
+                        //             //           width: 15, height: 15),
+                        //             //       SizedBox(
+                        //             //         width: 10,
+                        //             //       ),
+                        //             //       Text("Last Message")
+                        //             //     ],
+                        //             //   ),
+                        //             // ),
+                        //             onTap: () {
+                        //               String uniqueId;
 
-                                  Navigator.pushNamed(
-                                      context, AppConstants.chatScreen,
-                                      arguments: {
-                                        "chatId": uniqueId,
-                                        "userId": userID,
-                                        "userInfo" : allUsers[index]
-                                      });
-                                  
-                                },
-                              ),
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(left: 20, right: 20),
-                              height: 1,
-                              color: Colors.grey[300],
-                            )
-                          ]);
-                        });
-                  } else {
-                    return Text("Fetching");
-                  }
-                }))
+                        //               if (placeHolderUsersList[index]
+                        //                       .id
+                        //                       .hashCode >=
+                        //                   userID.hashCode) {
+                        //                 uniqueId =
+                        //                     "$userID-${placeHolderUsersList[index].id}";
+                        //               } else {
+                        //                 uniqueId =
+                        //                     "${placeHolderUsersList[index].id}-$userID";
+                        //               }
+                        //               setUsersToFriendlists(
+                        //                   userID,
+                        //                   placeHolderUsersList[index].id,
+                        //                   uniqueId);
+
+                        //               Navigator.pushNamed(
+                        //                   context, AppConstants.chatScreen,
+                        //                   arguments: {
+                        //                     "chatId": uniqueId,
+                        //                     "userId": userID,
+                        //                     "userInfo":
+                        //                         placeHolderUsersList[index]
+                        //                   });
+                        //             },
+                        //           ),
+                        //         ),
+                        //         SizedBox(
+                        //           height: 10,
+                        //         ),
+                        //         Container(
+                        //           margin: EdgeInsets.only(left: 20, right: 20),
+                        //           height: 1,
+                        //           color: Colors.grey[300],
+                        //         )
+                        //       ]);
+                        //     });
+                      } else {
+                        return Text("Fetching");
+                      }
+                    }))
         //)
       ],
     );
+  }
+
+  Widget getListView() {
+    return ListView.builder(
+        itemCount: placeHolderUsersList.length,
+        itemBuilder: (context, index) {
+          UserInfo user = placeHolderUsersList[index];
+          if (user.id == userID) {
+            //firModel.notify(user.profilePic, user.userName);
+            return Container();
+          }
+          return Column(children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: ListTile(
+                leading: RoundedImage(user.profilePic, 10, 50),
+                // Image.asset(
+                //     "icons/user_profilr_pic@3x.png"),
+                trailing:
+                    //  Padding(
+                    //   padding: EdgeInsets.only(top: 0),
+                    //   child:
+                    Image.asset("icons/next@2x.png", width: 15, height: 15),
+                // ),
+                title: Text(placeHolderUsersList[index].userName),
+                //Row(
+                //   mainAxisAlignment:
+                //       MainAxisAlignment.spaceBetween,
+                //   children: <Widget>[
+                //     Text(allUsers[index].userName),
+                //     Text("2:10 pm")
+                //   ],
+                // ),
+                // subtitle: Padding(
+                //   padding: EdgeInsets.only(top: 10),
+                //   child: Row(
+                //     children: <Widget>[
+                //       Image.asset("icons/seen@3x.png",
+                //           width: 15, height: 15),
+                //       SizedBox(
+                //         width: 10,
+                //       ),
+                //       Text("Last Message")
+                //     ],
+                //   ),
+                // ),
+                onTap: () {
+                  String uniqueId;
+
+                  if (placeHolderUsersList[index].id.hashCode >=
+                      userID.hashCode) {
+                    uniqueId = "$userID-${placeHolderUsersList[index].id}";
+                  } else {
+                    uniqueId = "${placeHolderUsersList[index].id}-$userID";
+                  }
+                  setUsersToFriendlists(
+                      userID, placeHolderUsersList[index].id, uniqueId);
+
+                  Navigator.pushNamed(context, AppConstants.chatScreen,
+                      arguments: {
+                        "chatId": uniqueId,
+                        "userId": userID,
+                        "userInfo": placeHolderUsersList[index]
+                      });
+                },
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Container(
+              margin: EdgeInsets.only(left: 20, right: 20),
+              height: 1,
+              color: Colors.grey[300],
+            )
+          ]);
+        });
   }
 }

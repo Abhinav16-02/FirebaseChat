@@ -8,7 +8,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firbase_chat/VerifyOtp.Dart';
 import 'package:firbase_chat/Extensions/Extensions.dart';
-import 'package:flutter_statusbarcolor/flutter_statusbarcolor.dart';
 import 'ui/shared/Alert.dart';
 import 'ui/shared/sharedPreferences.dart';
 
@@ -103,7 +102,7 @@ class _ChatAppState extends State<ChatApp> {
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  VerifyOtp(verificationID: this.verificationID)));
+                  VerifyOtp(verificationID: this.verificationID,mobileNumber:myController.text,)));
     };
 
     final PhoneVerificationFailed verificationFailed = (AuthException error) {
@@ -127,7 +126,10 @@ class _ChatAppState extends State<ChatApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.white, body: Container(
+    return WillPopScope(
+        onWillPop: () async => false,
+        child:
+    Scaffold(backgroundColor: Colors.white, body: Container(
       alignment: Alignment.center,
       child: SingleChildScrollView(
           child: Column(
@@ -218,7 +220,7 @@ class _ChatAppState extends State<ChatApp> {
         ],
       )),
     ),
-    );
+    ));
   }
   
 }
