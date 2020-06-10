@@ -54,22 +54,22 @@ class _ProflieState extends State<Proflie>
     super.dispose();
   }
 
-  _getname() async {
-    var name = await SharedData().getCurrentName();
-    var image = await SharedData().getCurrentUserImage();
-    setState(() {
-      if (name != null) {
-        this.name = name;
-        controller.text = name;
-      } else {
-        this.name = widget.name;
-        controller.text = name;
-      }
-      if (image != null) {
-        this.selectedImage = File(image);
-      }
-    });
-  }
+  // _getname() async {
+  //   var name = await SharedData().getCurrentName();
+  //   var image = await SharedData().getCurrentUserImage();
+  //   setState(() {
+  //     if (name != null) {
+  //       this.name = name;
+  //       controller.text = name;
+  //     } else {
+  //       this.name = widget.name;
+  //       controller.text = name;
+  //     }
+  //     if (image != null) {
+  //       this.selectedImage = File(image);
+  //     }
+  //   });
+  // }
 
   Future<String> _saveUserData() async {
     if (this.name != null) {
@@ -248,15 +248,19 @@ class _ProflieState extends State<Proflie>
                       onPressed: () async {
                         this.name = controller.text;
                         if (this.name != null && this.name != "") {
-                          setState(() {
-                            isLoading = true;
-                          });
-                          String url = await _saveUserData();
-                          setState(() {
-                            isLoading = false;
-                          });
-                          if (widget.userPic != null) {
+                          String url;
+                          if (selectedImage != null) {
+                            setState(() {
+                              isLoading = true;
+                            });
+                             url = await _saveUserData();
+                            setState(() {
+                              isLoading = false;
+                            });
+
                             widget.userPic.getCurrentProfile(url);
+                          }else{
+                            url = widget.image; 
                           }
                           await createNewuser(url).then((value) {
                             if ((widget.back == false) && (value == true)) {
@@ -276,8 +280,10 @@ class _ProflieState extends State<Proflie>
                 ),
               ),
               isLoading
-                  ? Container(color: Colors.black26 ,
-                  child: Center(child: CircularProgressIndicator())) : Container()
+                  ? Container(
+                      color: Colors.black26,
+                      child: Center(child: CircularProgressIndicator()))
+                  : Container()
               // Positioned(
               //     child: Container(
               //   width: Utility().screenWidth(context, multipliedBy: 0.5),

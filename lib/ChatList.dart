@@ -82,7 +82,7 @@ class _ChatListState extends State<ChatList> with GetProfilePic {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
+    return WillPopScope( //To stop back action from android devices 
         onWillPop: () async => false,
         child: Scaffold(
           appBar: AppBar(
@@ -236,93 +236,8 @@ class _AllUserListState extends State<AllUserList> {
                         placeHolderUsersList = allUsers;
                         //List view builder
                         return getListView();
-                        // return ListView.builder(
-                        //     itemCount: placeHolderUsersList.length,
-                        //     itemBuilder: (context, index) {
-                        //       UserInfo user = placeHolderUsersList[index];
-                        //       if (user.id == userID) {
-                        //         //firModel.notify(user.profilePic, user.userName);
-                        //         return Container();
-                        //       }
-                        //       return Column(children: <Widget>[
-                        //         Padding(
-                        //           padding: EdgeInsets.only(top: 20),
-                        //           child: ListTile(
-                        //             leading:
-                        //                 RoundedImage(user.profilePic, 10, 50),
-                        //             // Image.asset(
-                        //             //     "icons/user_profilr_pic@3x.png"),
-                        //             trailing:
-                        //                 //  Padding(
-                        //                 //   padding: EdgeInsets.only(top: 0),
-                        //                 //   child:
-                        //                 Image.asset("icons/next@2x.png",
-                        //                     width: 15, height: 15),
-                        //             // ),
-                        //             title: Text(
-                        //                 placeHolderUsersList[index].userName),
-                        //             //Row(
-                        //             //   mainAxisAlignment:
-                        //             //       MainAxisAlignment.spaceBetween,
-                        //             //   children: <Widget>[
-                        //             //     Text(allUsers[index].userName),
-                        //             //     Text("2:10 pm")
-                        //             //   ],
-                        //             // ),
-                        //             // subtitle: Padding(
-                        //             //   padding: EdgeInsets.only(top: 10),
-                        //             //   child: Row(
-                        //             //     children: <Widget>[
-                        //             //       Image.asset("icons/seen@3x.png",
-                        //             //           width: 15, height: 15),
-                        //             //       SizedBox(
-                        //             //         width: 10,
-                        //             //       ),
-                        //             //       Text("Last Message")
-                        //             //     ],
-                        //             //   ),
-                        //             // ),
-                        //             onTap: () {
-                        //               String uniqueId;
-
-                        //               if (placeHolderUsersList[index]
-                        //                       .id
-                        //                       .hashCode >=
-                        //                   userID.hashCode) {
-                        //                 uniqueId =
-                        //                     "$userID-${placeHolderUsersList[index].id}";
-                        //               } else {
-                        //                 uniqueId =
-                        //                     "${placeHolderUsersList[index].id}-$userID";
-                        //               }
-                        //               setUsersToFriendlists(
-                        //                   userID,
-                        //                   placeHolderUsersList[index].id,
-                        //                   uniqueId);
-
-                        //               Navigator.pushNamed(
-                        //                   context, AppConstants.chatScreen,
-                        //                   arguments: {
-                        //                     "chatId": uniqueId,
-                        //                     "userId": userID,
-                        //                     "userInfo":
-                        //                         placeHolderUsersList[index]
-                        //                   });
-                        //             },
-                        //           ),
-                        //         ),
-                        //         SizedBox(
-                        //           height: 10,
-                        //         ),
-                        //         Container(
-                        //           margin: EdgeInsets.only(left: 20, right: 20),
-                        //           height: 1,
-                        //           color: Colors.grey[300],
-                        //         )
-                        //       ]);
-                        //     });
                       } else {
-                        return Text("Fetching");
+                        return Center(child:CircularProgressIndicator());//Text("Fetching");
                       }
                     }))
         //)
@@ -336,7 +251,7 @@ class _AllUserListState extends State<AllUserList> {
         itemBuilder: (context, index) {
           UserInfo user = placeHolderUsersList[index];
           if (user.id == userID) {
-            //firModel.notify(user.profilePic, user.userName);
+            firModel.notify(user.profilePic, user.userName);
             return Container();
           }
           return Column(children: <Widget>[
